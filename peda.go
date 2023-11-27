@@ -7,7 +7,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/adam-ghafara/geoquery/config"
+	"github.com/adam-ghafara/geoquery/gq"
+	"github.com/adam-ghafara/geoquery/helper"
 	"github.com/aiteung/atdb"
+	"github.com/aiteung/atmessage"
+	"github.com/aiteung/module/model"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -763,4 +768,16 @@ func GCFCreatePolygonee(MONGOCONNSTRINGENV, dbname, collectionname string, r *ht
 
 	log.Println("Success: Polygon created")
 	return GCFReturnStruct(CreateResponse(true, "Success Create Polygone", datapolygone))
+}
+
+func PostGeoIntersects(w http.ResponseWriter, r *http.Request) {
+	var msg model.IteungMessage
+	var resp atmessage.Response
+	json.NewDecoder(r.Body).Decode(&msg)
+	if r.Header.Get("Secret") == config.EndpointSecret {
+		resp.Response = gq.GeoIntersects(config.Mongocon, msg.Longitude, msg.Latitude)
+	} else {
+		resp.Response = "Secret Salah"
+	}
+	fmt.Fprintf(w, helper.Json(resp))
 }

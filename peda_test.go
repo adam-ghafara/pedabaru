@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/adam-ghafara/geoquery/gq"
+	"github.com/adam-ghafara/geoquery/helper"
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,8 +13,8 @@ import (
 
 func TestCreateNewUserRole(t *testing.T) {
 	var userdata User
-	userdata.Username = "dzikri"
-	userdata.Password = "dzikri"
+	userdata.Username = "admin"
+	userdata.Password = "12345"
 	userdata.Role = "admin"
 	mconn := SetConnection("MONGOSTRING", "petapedia")
 	CreateNewUserRole(mconn, "user", userdata)
@@ -136,4 +138,10 @@ func TestUserFix(t *testing.T) {
 	userdata.Password = "dzikri"
 	userdata.Role = "admin"
 	CreateUser(mconn, "user", userdata)
+}
+
+func TestUpdateGetData(t *testing.T) {
+	mconn := helper.SetConnection("mongodb+srv://admin:402390@kukidata.jtgvziw.mongodb.net/", "geojsonList")
+	datagedung := gq.GeoIntersects(mconn, 107.60010652297046, -6.925622320467241)
+	fmt.Println(datagedung)
 }

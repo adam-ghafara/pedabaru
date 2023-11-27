@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/adam-ghafara/geoquery/models"
 	"github.com/aiteung/atdb"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,7 +22,6 @@ func SetConnection(MONGOCONNSTRINGENV, dbname string) *mongo.Database {
 	return atdb.MongoConnect(DBmongoinfo)
 }
 
-//
 func GetAllBangunanLineString(mongoconn *mongo.Database, collection string) []GeoJson {
 	lokasi := atdb.GetAllDoc[[]GeoJson](mongoconn, collection)
 	return lokasi
@@ -316,4 +317,25 @@ func PostPolygone(mongoconn *mongo.Database, collection string, polygonedata Geo
 
 func PostPoint(mongoconn *mongo.Database, collection string, pointdata GeometryPoint) interface{} {
 	return atdb.InsertOneDoc(mongoconn, collection, pointdata)
+}
+
+func GeoIntersects(mongoconn *mongo.Database, long float64, lat float64) (namalokasi string) {
+	lokasicollection := mongoconn.Collection("GISDB")
+	filter := bson.M{
+		"geometry": bson.M{
+			"$geoIntersects": bson.M{
+				"$geometry": bson.M{
+					"type":        "Point",
+					"coordinates": []float64{long, lat},
+				},
+			},
+		},
+	}
+	var lokasi models.Lokasi
+	err := lokasicollection.FindOne(context.TODO(), filter).Decode(&lokasi)
+	if err != nil {
+		log.Printf("GeoIntersects: %v\n", err)
+	}
+	return lokasi.Properties.Name
+
 }
